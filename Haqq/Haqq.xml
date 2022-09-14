@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>5.0</version>
+    <date>2022-09-12T19:09:56Z</date>
+    <groups>
+        <group>
+            <name>Templates</name>
+        </group>
+    </groups>
+    <templates>
+        <template>
+            <template>Haqq Validators</template>
+            <name>Haqq Validators</name>
+            <description>template for Haqq network&#13;
+done by Yurbason</description>
+            <groups>
+                <group>
+                    <name>Templates</name>
+                </group>
+            </groups>
+            <applications>
+                <application>
+                    <name>CryptoSphere</name>
+                </application>
+            </applications>
+            <items>
+                <item>
+                    <name>Haqq - Delegator APR</name>
+                    <type>CALCULATED</type>
+                    <key>haqq.calculated.delegator.apr</key>
+                    <delay>6h</delay>
+                    <history>7d</history>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <params>change(&quot;system.run[\&quot;haqqd query distribution rewards {$HAQQDELEGATORWALLET} -o json | jq -r '.total[] | select(.denom == \\&quot;{$HAQQDENOM}\\&quot;) | .amount'\&quot;]&quot;)&#13;
+*4&#13;
+*100&#13;
+*365&#13;
+/last(&quot;system.run[\&quot;haqqd q staking delegations {$HAQQDELEGATORWALLET} -o json | jq -r '[.delegation_responses[].balance.amount | tonumber] | add'\&quot;]&quot;)</params>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MATCHES_REGEX</type>
+                            <params>^([0-9]*[,.]?[0-9]+|[0-9]+[,.]?[0-9]*)?$</params>
+                            <error_handler>DISCARD_VALUE</error_handler>
+                        </step>
+                    </preprocessing>
+                </item>
+                <item>
+                    <name>Haqq - Catching_Up Info</name>
+                    <key>system.run[&quot;curl -s http://127.0.0.1:{$HAQQRPCPORT}/status | jq -r '.result.sync_info.catching_up'&quot;]</key>
+                    <delay>15m</delay>
+                    <history>2d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()}=&quot;true&quot;</expression>
+                            <name>Haqq - Catching_Up is On</name>
+                            <priority>WARNING</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Haqq - Latest Block Height</name>
+                    <key>system.run[&quot;curl -s http://127.0.0.1:{$HAQQRPCPORT}/status | jq -r '.result.sync_info.latest_block_height'&quot;]</key>
+                    <delay>15m</delay>
+                    <history>3d</history>
+                    <trends>30d</trends>
+                    <units>!</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{nodata(30m)}=1</expression>
+                            <name>Haqq - Latest Block Height no information in 30m</name>
+                            <priority>WARNING</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                        <trigger>
+                            <expression>{diff()}=0</expression>
+                            <name>Haqq - Latest Block Height not changed in 15m</name>
+                            <priority>WARNING</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Haqq - Quantity of Proposals</name>
+                    <key>system.run[&quot;haqqd q gov proposals --count-total -o json | jq -r .pagination.total&quot;]</key>
+                    <delay>4h</delay>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>NOT_MATCHES_REGEX</type>
+                            <params>(.*no proposals.*)</params>
+                            <error_handler>CUSTOM_VALUE</error_handler>
+                            <error_handler_params>0</error_handler_params>
+                        </step>
+                    </preprocessing>
+                    <triggers>
+                        <trigger>
+                            <expression>{diff()}=1</expression>
+                            <name>Haqq - Quantity of Proposals was changed</name>
+                            <priority>INFO</priority>
+                            <type>MULTIPLE</type>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Haqq - Minimum signed per window</name>
+                    <key>system.run[&quot;haqqd q slashing params -o json | jq -r .min_signed_per_window&quot;]</key>
+                    <delay>12h</delay>
+                    <history>7d</history>
+                    <trends>90d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <params>100</params>
+                        </step>
+                    </preprocessing>
+                </item>
+                <item>
+                    <name>Haqq - Signed Blocks Window</name>
+                    <key>system.run[&quot;haqqd q slashing params -o json | jq -r .signed_blocks_window&quot;]</key>
+                    <delay>12h</delay>
+                    <history>7d</history>
+                    <trends>90d</trends>
+                    <units>!blocks</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                </item>
+                <item>
+                    <name>Haqq - Slash Downtime</name>
+                    <key>system.run[&quot;haqqd q slashing params -o json | jq -r .slash_fraction_downtime&quot;]</key>
+                    <delay>12h</delay>
+                    <history>7d</history>
+                    <trends>90d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <params>100</params>
+                        </step>
+                    </preprocessing>
+                </item>
+                <item>
+                    <name>Haqq - Missed Blocks Counter</name>
+                    <key>system.run[&quot;haqqd q slashing signing-info '{\&quot;@type\&quot;:\&quot;/cosmos.crypto.ed25519.PubKey\&quot;,\&quot;key\&quot;:\&quot;{$HAQQED25519PUBKEY}\&quot;}' -o json | jq -r .missed_blocks_counter&quot;]</key>
+                    <delay>15m</delay>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <units>!blocks</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()} &gt; {last(#2)} + 1</expression>
+                            <name>Haqq - Missed Blocks Counter was increased</name>
+                            <priority>WARNING</priority>
+                            <type>MULTIPLE</type>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Haqq - Tombstoned Status</name>
+                    <key>system.run[&quot;haqqd q slashing signing-info '{\&quot;@type\&quot;:\&quot;/cosmos.crypto.ed25519.PubKey\&quot;,\&quot;key\&quot;:\&quot;{$HAQQED25519PUBKEY}\&quot;}' -o json | jq -r .tombstoned&quot;]</key>
+                    <delay>15m</delay>
+                    <history>30d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()}=&quot;true&quot;</expression>
+                            <name>Haqq - Tombstoned is True</name>
+                            <priority>WARNING</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Haqq - Delegator Total Delegations</name>
+                    <key>system.run[&quot;haqqd q staking delegations {$HAQQDELEGATORWALLET} -o json | jq -r '[.delegation_responses[].balance.amount | tonumber] | add'&quot;]</key>
+                    <delay>1d</delay>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>!ISLM</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <params>0.000000000000000001</params>
+                        </step>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <params>return Math.round(value* 1000) / 1000</params>
+                        </step>
+                    </preprocessing>
+                </item>
+                <item>
+                    <name>Haqq - Delegations Unbonding Time</name>
+                    <key>system.run[&quot;haqqd q staking params -o json | jq -r .unbonding_time | grep -Eo [0-9]*&quot;]</key>
+                    <delay>1d</delay>
+                    <units>s</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                </item>
+                <item>
+                    <name>Haqq - Validator Commission Rewards</name>
+                    <key>system.run[&quot;haqqd query distribution commission {$HAQQVALOPER} -o json | jq -r '.commission[] | select(.denom == \&quot;{$HAQQDENOM}\&quot;) | .amount'&quot;]</key>
+                    <delay>6h</delay>
+                    <history>7d</history>
+                    <trends>90d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>!ISLM</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <params>0.000000000000000001</params>
+                        </step>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <params>return Math.round(value* 1000) / 1000</params>
+                        </step>
+                    </preprocessing>
+                </item>
+                <item>
+                    <name>Haqq - Delegator Rewards</name>
+                    <key>system.run[&quot;haqqd query distribution rewards {$HAQQDELEGATORWALLET} -o json | jq -r '.total[] | select(.denom == \&quot;{$HAQQDENOM}\&quot;) | .amount'&quot;]</key>
+                    <delay>6h</delay>
+                    <history>7d</history>
+                    <trends>90d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>!ISLM</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <params>0.000000000000000001</params>
+                        </step>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <params>return Math.round(value* 1000) / 1000</params>
+                        </step>
+                    </preprocessing>
+                </item>
+                <item>
+                    <name>Haqq - Validator Voting Power</name>
+                    <key>system.run[&quot;haqqd query staking validator {$HAQQVALOPER} -o json | jq -r '.tokens'&quot;]</key>
+                    <delay>1h</delay>
+                    <history>7d</history>
+                    <trends>90d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>!ISLM</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <params>0.000000000000000001</params>
+                        </step>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <params>return Math.round(value* 1000) / 1000</params>
+                        </step>
+                    </preprocessing>
+                    <triggers>
+                        <trigger>
+                            <expression>{diff()}=1</expression>
+                            <name>Haqq - Validator Voting Power was changed</name>
+                            <priority>INFO</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Haqq - Jailed Status</name>
+                    <key>system.run[&quot;haqqd query staking validator {$HAQQVALOPER} -o json | jq -r .jailed&quot;]</key>
+                    <delay>15m</delay>
+                    <history>30d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()}&lt;&gt;&quot;false&quot;</expression>
+                            <name>Haqq - Validator was Jailed</name>
+                            <priority>AVERAGE</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Haqq - Bond Status</name>
+                    <key>system.run[&quot;haqqd query staking validator {$HAQQVALOPER} -o json | jq -r .status&quot;]</key>
+                    <delay>15m</delay>
+                    <history>30d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()}=&quot;BOND_STATUS_UNBONDING&quot;</expression>
+                            <name>Haqq - Bond Status is UNBONDED!</name>
+                            <priority>HIGH</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                        <trigger>
+                            <expression>{diff()}=1</expression>
+                            <name>Haqq - Bond Status was changed</name>
+                            <priority>INFO</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+            </items>
+            <macros>
+                <macro>
+                    <macro>{$HAQQDELEGATORWALLET}</macro>
+                    <value>haqq1ymdzxx8k7hsuvq48xvn8lvmkry55cwl96ggmwj</value>
+                    <description>haqq1xxxxxxx address of your wallet</description>
+                </macro>
+                <macro>
+                    <macro>{$HAQQDENOM}</macro>
+                    <value>aISLM</value>
+                    <description>denom value</description>
+                </macro>
+                <macro>
+                    <macro>{$HAQQED25519PUBKEY}</macro>
+                    <value>XTaYWGBxXhguKRbdttyU67ggyAO1QBeyeCfth6RBUi8=</value>
+                    <description>key info from 'haqqd tendermint show-validator'</description>
+                </macro>
+                <macro>
+                    <macro>{$HAQQRPCPORT}</macro>
+                    <value>56657</value>
+                    <description>RPC port of your validator</description>
+                </macro>
+                <macro>
+                    <macro>{$HAQQVALOPER}</macro>
+                    <value>haqqvaloper1ymdzxx8k7hsuvq48xvn8lvmkry55cwl9k2y42n</value>
+                    <description>haqqvaloper1xxxxxxxx address of your validator</description>
+                </macro>
+            </macros>
+        </template>
+    </templates>
+</zabbix_export>
