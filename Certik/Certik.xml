@@ -1,0 +1,512 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>5.0</version>
+    <date>2023-03-31T19:39:16Z</date>
+    <groups>
+        <group>
+            <name>Templates</name>
+        </group>
+    </groups>
+    <templates>
+        <template>
+            <template>Certik Validators</template>
+            <name>Certik Validators</name>
+            <groups>
+                <group>
+                    <name>Templates</name>
+                </group>
+            </groups>
+            <applications>
+                <application>
+                    <name>CryptoSphere</name>
+                </application>
+            </applications>
+            <items>
+                <item>
+                    <name>Certik - Delegator APR</name>
+                    <type>CALCULATED</type>
+                    <key>certik.calculated.delegator.apr</key>
+                    <delay>1d</delay>
+                    <history>7d</history>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <params>change(&quot;system.run[\&quot;gravity query distribution rewards {$CERTIKDELEGATORWALLET} -o json | jq -r '.total[] | select(.denom == \\&quot;{$CERTIKDENOM}\\&quot;) | .amount'\&quot;]&quot;)&#13;
+*100&#13;
+*365&#13;
+/last(&quot;system.run[\&quot;gravity q staking delegations {$CERTIKDELEGATORWALLET} -o json | jq -r '[.delegation_responses[].balance.amount | tonumber] | add'\&quot;]&quot;)</params>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MATCHES_REGEX</type>
+                            <params>^([0-9]*[,.]?[0-9]+|[0-9]+[,.]?[0-9]*)?$</params>
+                            <error_handler>DISCARD_VALUE</error_handler>
+                        </step>
+                    </preprocessing>
+                </item>
+                <item>
+                    <name>Certik Github Version</name>
+                    <key>system.run[&quot;curl -s 'https://api.github.com/repos/shentufoundation/shentu/releases/latest' | jq -r '.tag_name'&quot;]</key>
+                    <delay>1h</delay>
+                    <history>3d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{diff()}=1</expression>
+                            <name>Github version of Certik was changed - need update</name>
+                            <priority>INFO</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Certik - Catching_Up Info</name>
+                    <key>system.run[&quot;curl -s http://127.0.0.1:{$CERTIKRPCPORT}/status | jq -r '.result.sync_info.catching_up'&quot;]</key>
+                    <delay>5m</delay>
+                    <history>2d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MATCHES_REGEX</type>
+                            <params>^(false|true)$</params>
+                            <error_handler>DISCARD_VALUE</error_handler>
+                        </step>
+                    </preprocessing>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()}=&quot;true&quot;</expression>
+                            <name>Certik - Catching_Up is On</name>
+                            <priority>WARNING</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Certik - Latest Block Height</name>
+                    <key>system.run[&quot;curl -s http://127.0.0.1:{$CERTIKRPCPORT}/status | jq -r '.result.sync_info.latest_block_height'&quot;]</key>
+                    <delay>15m</delay>
+                    <history>3d</history>
+                    <trends>60d</trends>
+                    <units>!</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{nodata(30m)}=1</expression>
+                            <name>Certik - Latest Block Height no information in 30m</name>
+                            <priority>WARNING</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                        <trigger>
+                            <expression>{diff()}=0</expression>
+                            <name>Certik - Latest Block Height not changed in 15m</name>
+                            <priority>AVERAGE</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Certik - Validator Wallet Balance</name>
+                    <key>system.run[&quot;shentud q bank balances {$CERTIKDELEGATORWALLET} -o json | jq -r .balances[].amount&quot;]</key>
+                    <delay>0;h21m10</delay>
+                    <history>7d</history>
+                    <trends>60d</trends>
+                    <units>!CTK</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <params>0.000001</params>
+                        </step>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <params>return Math.round(value* 1000) / 1000</params>
+                        </step>
+                    </preprocessing>
+                </item>
+                <item>
+                    <name>Certik - Quantity of Proposals</name>
+                    <key>system.run[&quot;shentud q gov proposals --count-total -o json | jq -r | grep PROPOSAL_STATUS_VOTING_PERIOD -c&quot;]</key>
+                    <delay>4h</delay>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>NOT_MATCHES_REGEX</type>
+                            <params>(.*no proposals.*)</params>
+                            <error_handler>CUSTOM_VALUE</error_handler>
+                            <error_handler_params>0</error_handler_params>
+                        </step>
+                    </preprocessing>
+                    <triggers>
+                        <trigger>
+                            <expression>{diff()}=1</expression>
+                            <name>Certik - Quantity of Proposals was changed</name>
+                            <priority>INFO</priority>
+                            <type>MULTIPLE</type>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Certik - Signed Blocks Window</name>
+                    <key>system.run[&quot;shentud q slashing params -o json | jq -r '.signed_blocks_window'&quot;]</key>
+                    <delay>12h</delay>
+                    <history>7d</history>
+                    <trends>90d</trends>
+                    <units>!blocks</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                </item>
+                <item>
+                    <name>Certik - Minimum signed per window</name>
+                    <key>system.run[&quot;shentud q slashing params -o json | jq -r .min_signed_per_window&quot;]</key>
+                    <delay>12h</delay>
+                    <history>7d</history>
+                    <trends>90d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <params>100</params>
+                        </step>
+                    </preprocessing>
+                </item>
+                <item>
+                    <name>Certik - Slash Downtime</name>
+                    <key>system.run[&quot;shentud q slashing params -o json | jq -r .slash_fraction_downtime&quot;]</key>
+                    <delay>12h</delay>
+                    <history>7d</history>
+                    <trends>90d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <params>100</params>
+                        </step>
+                    </preprocessing>
+                </item>
+                <item>
+                    <name>Certik - Missed Blocks Counter</name>
+                    <key>system.run[&quot;shentud q slashing signing-info '{\&quot;@type\&quot;:\&quot;/cosmos.crypto.ed25519.PubKey\&quot;,\&quot;key\&quot;:\&quot;{$CERTIKED25519PUBKEY}\&quot;}' -o json | jq -r .missed_blocks_counter&quot;]</key>
+                    <delay>15m</delay>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <units>!blocks</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()} &gt; {last(#2)} + 5</expression>
+                            <name>Certik - Missed Blocks Counter was increased</name>
+                            <priority>WARNING</priority>
+                            <type>MULTIPLE</type>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Certik - Tombstoned Status</name>
+                    <key>system.run[&quot;shentud q slashing signing-info '{\&quot;@type\&quot;:\&quot;/cosmos.crypto.ed25519.PubKey\&quot;,\&quot;key\&quot;:\&quot;{$CERTIKED25519PUBKEY}\&quot;}' -o json | jq -r .tombstoned&quot;]</key>
+                    <delay>15m</delay>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MATCHES_REGEX</type>
+                            <params>^(false|true)$</params>
+                            <error_handler>DISCARD_VALUE</error_handler>
+                        </step>
+                    </preprocessing>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()}=&quot;true&quot;</expression>
+                            <name>Certik - Tombstoned is True</name>
+                            <priority>WARNING</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Certik - Delegator Total Delegations</name>
+                    <key>system.run[&quot;shentud q staking delegations {$CERTIKDELEGATORWALLET} -o json | jq -r '[.delegation_responses[].balance.amount | tonumber] | add'&quot;]</key>
+                    <delay>1d</delay>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>!CTK</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <params>0.000001</params>
+                        </step>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <params>return Math.round(value* 1000) / 1000</params>
+                        </step>
+                    </preprocessing>
+                </item>
+                <item>
+                    <name>Certik - Delegations Unbonding Time</name>
+                    <key>system.run[&quot;shentud q staking params -o json | jq -r .unbonding_time | grep -Eo [0-9]*&quot;]</key>
+                    <delay>1d</delay>
+                    <units>s</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                </item>
+                <item>
+                    <name>Certik - Number of Jailed Validators</name>
+                    <key>system.run[&quot;shentud q staking validators --output json | jq -r '.validators[].jailed' | grep true | wc -l&quot;]</key>
+                    <delay>1h</delay>
+                    <history>7d</history>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                </item>
+                <item>
+                    <name>Certik - Validator Commission Rewards</name>
+                    <key>system.run[&quot;shentud query distribution commission {$CERTIKVALOPER} -o json | jq -r '.commission[] | select(.denom == \&quot;{$CERTIKDENOM}\&quot;) | .amount'&quot;]</key>
+                    <delay>0;h21m10</delay>
+                    <history>14d</history>
+                    <trends>30d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>!CTK</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <params>0.000001</params>
+                        </step>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <params>return Math.round(value* 1000) / 1000</params>
+                        </step>
+                    </preprocessing>
+                </item>
+                <item>
+                    <name>Certik - Delegator Rewards</name>
+                    <key>system.run[&quot;shentud query distribution rewards {$CERTIKDELEGATORWALLET} -o json | jq -r '.total[] | select(.denom == \&quot;{$CERTIKDENOM}\&quot;) | .amount'&quot;]</key>
+                    <delay>0;h21m10</delay>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>!CTK</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <params>0.000001</params>
+                        </step>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <params>return Math.round(value* 1000) / 1000</params>
+                        </step>
+                    </preprocessing>
+                </item>
+                <item>
+                    <name>Certik - Jailed Status</name>
+                    <key>system.run[&quot;shentud query staking validator {$CERTIKVALOPER} -o json | jq -r .jailed&quot;]</key>
+                    <delay>10m</delay>
+                    <history>3d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MATCHES_REGEX</type>
+                            <params>^(false|true)$</params>
+                            <error_handler>DISCARD_VALUE</error_handler>
+                        </step>
+                    </preprocessing>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()}&lt;&gt;&quot;false&quot;</expression>
+                            <name>Certik - Validator was Jailed</name>
+                            <priority>HIGH</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Certik - Bond Status</name>
+                    <key>system.run[&quot;shentud query staking validator {$CERTIKVALOPER} -o json | jq -r .status&quot;]</key>
+                    <delay>15m</delay>
+                    <history>30d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MATCHES_REGEX</type>
+                            <params>^.*BOND.*$</params>
+                        </step>
+                    </preprocessing>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()}=&quot;BOND_STATUS_UNBONDING&quot;</expression>
+                            <name>Certik - Bond Status is UNBONDING!</name>
+                            <priority>HIGH</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                        <trigger>
+                            <expression>{diff()}=1</expression>
+                            <name>Certik - Bond Status was changed</name>
+                            <priority>WARNING</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Certik - Validator Moniker</name>
+                    <key>system.run[&quot;shentud status 2&gt;&amp;1 | jq -r '.NodeInfo.moniker'&quot;]</key>
+                    <delay>1d</delay>
+                    <history>3d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                </item>
+                <item>
+                    <name>Certik - Validator chain-id</name>
+                    <key>system.run[&quot;shentud status 2&gt;&amp;1 | jq -r '.NodeInfo.network'&quot;]</key>
+                    <delay>1d</delay>
+                    <history>3d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                </item>
+                <item>
+                    <name>Certik - Voting Power</name>
+                    <key>system.run[&quot;shentud status 2&gt;&amp;1 | jq -r '.ValidatorInfo.VotingPower'&quot;]</key>
+                    <delay>0;h21m10</delay>
+                    <history>3d</history>
+                    <trends>30d</trends>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{diff()}=1</expression>
+                            <name>Certik - Validator Voting Power was changed</name>
+                            <priority>INFO</priority>
+                            <type>MULTIPLE</type>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+            </items>
+            <macros>
+                <macro>
+                    <macro>{$CERTIKDELEGATORWALLET}</macro>
+                    <value>certik1nj59qd5h9tt4r0k40twj5ptp9f7xsmg0twzhkv</value>
+                    <description>certik1xxxxxxx address of your wallet</description>
+                </macro>
+                <macro>
+                    <macro>{$CERTIKDENOM}</macro>
+                    <value>uctk</value>
+                    <description>denom value</description>
+                </macro>
+                <macro>
+                    <macro>{$CERTIKED25519PUBKEY}</macro>
+                    <value>B8xXgUsIpLegPVsPVlNovNwJLUrooqiiGj1jVaalz0s=</value>
+                    <description>key info from 'shentud tendermint show-validator'</description>
+                </macro>
+                <macro>
+                    <macro>{$CERTIKRPCPORT}</macro>
+                    <value>26657</value>
+                    <description>RPC port of your validator</description>
+                </macro>
+                <macro>
+                    <macro>{$CERTIKVALOPER}</macro>
+                    <value>certikvaloper1nj59qd5h9tt4r0k40twj5ptp9f7xsmg0u6xhlk</value>
+                    <description>certikvaloper1xxxxxxxx address of your validator</description>
+                </macro>
+            </macros>
+        </template>
+    </templates>
+</zabbix_export>
