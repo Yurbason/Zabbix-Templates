@@ -19,17 +19,17 @@ AllowKey=system.run[curl*]
    - {$AURAPORT}             = RPC port of your validator (**26657** default)
    - {$AURAVALOPER}          = **auravaloper1xxxxxxx** address of your validator
 
-![Template Macros](https://user-images.githubusercontent.com/52459938/174291436-c030def9-e989-4a6f-bac1-f64f39baa84a.png)
+![Template Macros](https://user-images.githubusercontent.com/52459938/229200176-96d29d80-af15-4d2f-9ddb-58b06bd4b856.png)
 
 7. link template to validator host
 
 ## some screenshots
 ***monitoring values***
 
-![Aura monitoring values](https://user-images.githubusercontent.com/52459938/174290704-137ba455-7f7e-4b81-8536-d68122d070f0.png)
+![Aura monitoring values](https://user-images.githubusercontent.com/52459938/229200073-7e70ff34-1e28-477c-af50-bd57db24510a.png)
 
 
 
 ***triggers***
 
-![AuraTriggers](https://user-images.githubusercontent.com/52459938/174290841-a185307f-32bb-4884-9dad-b8f13885ca48.png)
+![AuraTriggers](https://user-images.githubusercontent.com/52459938/229200250-823bfc89-fb5f-4dd0-a957-2c786b78a5e0.png)
