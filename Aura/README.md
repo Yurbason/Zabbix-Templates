@@ -26,7 +26,7 @@ AllowKey=system.run[curl*]
 ## some screenshots
 ***monitoring values***
 
-![Aura monitoring values](https://user-images.githubusercontent.com/52459938/229200073-7e70ff34-1e28-477c-af50-bd57db24510a.png)
+![Aura monitoring values](https://user-images.githubusercontent.com/52459938/229312009-022734c4-8fec-4a5d-a06c-02ef2d3a2b03.png)
 
 
 
