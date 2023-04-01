@@ -182,7 +182,7 @@ done by Yurbason</description>
                     <history>7d</history>
                     <trends>30d</trends>
                     <value_type>FLOAT</value_type>
-                    <units>!EAURA</units>
+                    <units>!AURA</units>
                     <applications>
                         <application>
                             <name>CryptoSphere</name>
@@ -217,7 +217,7 @@ done by Yurbason</description>
                     <history>7d</history>
                     <trends>90d</trends>
                     <value_type>FLOAT</value_type>
-                    <units>!EAURA</units>
+                    <units>!AURA</units>
                     <applications>
                         <application>
                             <name>CryptoSphere</name>
@@ -241,7 +241,7 @@ done by Yurbason</description>
                     <history>7d</history>
                     <trends>90d</trends>
                     <value_type>FLOAT</value_type>
-                    <units>!EAURA</units>
+                    <units>!AURA</units>
                     <applications>
                         <application>
                             <name>CryptoSphere</name>
@@ -265,7 +265,7 @@ done by Yurbason</description>
                     <history>7d</history>
                     <trends>90d</trends>
                     <value_type>FLOAT</value_type>
-                    <units>!EAURA</units>
+                    <units>!AURA</units>
                     <applications>
                         <application>
                             <name>CryptoSphere</name>
@@ -409,7 +409,7 @@ done by Yurbason</description>
                 </macro>
                 <macro>
                     <macro>{$AURADENOM}</macro>
-                    <value>ueaura</value>
+                    <value>uaura</value>
                     <description>denom value</description>
                 </macro>
                 <macro>
