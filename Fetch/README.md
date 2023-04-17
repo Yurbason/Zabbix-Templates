@@ -19,17 +19,17 @@ AllowKey=system.run[curl*]
    - {$FETCHPORT}             = RPC port of your validator (**26657** default)
    - {$FETCHVALOPER}          = **fetchvaloper1xxxxxxx** address of your validator
 
-![Template Macros]( )
+![Template Macros](https://user-images.githubusercontent.com/52459938/232587780-35d9751c-83bf-40b8-83ad-8cb83ce5764d.png)
 
 7. link template to validator host
 
 ## some screenshots
 ***monitoring values***
 
-![Fetch monitoring values]( )
+![Fetch monitoring values](https://user-images.githubusercontent.com/52459938/232587888-0b6a2eb3-bd9e-4f55-99fa-345dc9c9fb9f.png)
 
 
 
 ***triggers***
 
-![FetchTriggers]( )
+![FetchTriggers](https://user-images.githubusercontent.com/52459938/232587983-2c3d61a0-5c5b-4bcb-be7d-f1d68a947103.png)
