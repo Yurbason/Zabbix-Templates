@@ -1,0 +1,454 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>5.0</version>
+    <date>2023-05-21T18:51:33Z</date>
+    <groups>
+        <group>
+            <name>Templates</name>
+        </group>
+    </groups>
+    <templates>
+        <template>
+            <template>Gitopia Validators</template>
+            <name>Gitopia Validators</name>
+            <description>template for Gitopia network&#13;
+done by Yurbason</description>
+            <groups>
+                <group>
+                    <name>Templates</name>
+                </group>
+            </groups>
+            <applications>
+                <application>
+                    <name>CryptoSphere</name>
+                </application>
+            </applications>
+            <items>
+                <item>
+                    <name>Gitopia - Delegator APR</name>
+                    <type>CALCULATED</type>
+                    <key>gitopia.calculated.delegator.apr</key>
+                    <delay>6h</delay>
+                    <history>7d</history>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <params>change(&quot;system.run[\&quot;gitopiad query distribution rewards {$GITOPIADELEGATORWALLET} -o json | jq -r '.total[] | select(.denom == \\&quot;{$GITOPIADENOM}\\&quot;) | .amount'\&quot;]&quot;)&#13;
+*4&#13;
+*100&#13;
+*365&#13;
+/last(&quot;system.run[\&quot;gitopiad q staking delegations {$GITOPIADELEGATORWALLET} -o json | jq -r '[.delegation_responses[].balance.amount | tonumber] | add'\&quot;]&quot;)</params>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MATCHES_REGEX</type>
+                            <params>^([0-9]*[,.]?[0-9]+|[0-9]+[,.]?[0-9]*)?$</params>
+                            <error_handler>DISCARD_VALUE</error_handler>
+                        </step>
+                    </preprocessing>
+                </item>
+                <item>
+                    <name>Gitopia - Catching_Up Info</name>
+                    <key>system.run[&quot;curl -s http://127.0.0.1:{$GITOPIARPCPORT}/status | jq -r '.result.sync_info.catching_up'&quot;]</key>
+                    <delay>15m</delay>
+                    <history>2d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MATCHES_REGEX</type>
+                            <params>^(false|true)$</params>
+                            <error_handler>DISCARD_VALUE</error_handler>
+                        </step>
+                    </preprocessing>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()}=&quot;true&quot;</expression>
+                            <name>Gitopia - Catching_Up is On</name>
+                            <priority>WARNING</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Gitopia - Latest Block Height</name>
+                    <key>system.run[&quot;curl -s http://127.0.0.1:{$GITOPIARPCPORT}/status | jq -r '.result.sync_info.latest_block_height'&quot;]</key>
+                    <delay>15m</delay>
+                    <history>3d</history>
+                    <trends>30d</trends>
+                    <units>!</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{nodata(30m)}=1</expression>
+                            <name>Gitopia - Latest Block Height no information in 30m</name>
+                            <priority>WARNING</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                        <trigger>
+                            <expression>{diff()}=0</expression>
+                            <name>Gitopia - Latest Block Height not changed in 15m</name>
+                            <priority>WARNING</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Gitopia - Quantity of Proposals</name>
+                    <key>system.run[&quot;gitopiad q gov proposals --count-total -o json | jq -r | grep PROPOSAL_STATUS_VOTING_PERIOD -c&quot;]</key>
+                    <delay>4h</delay>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>NOT_MATCHES_REGEX</type>
+                            <params>(.*no proposals.*)</params>
+                            <error_handler>CUSTOM_VALUE</error_handler>
+                            <error_handler_params>0</error_handler_params>
+                        </step>
+                    </preprocessing>
+                    <triggers>
+                        <trigger>
+                            <expression>{diff()}=1</expression>
+                            <name>Gitopia - Quantity of Proposals was changed</name>
+                            <priority>INFO</priority>
+                            <type>MULTIPLE</type>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Gitopia - Minimum signed per window</name>
+                    <key>system.run[&quot;gitopiad q slashing params -o json | jq -r .min_signed_per_window&quot;]</key>
+                    <delay>12h</delay>
+                    <history>7d</history>
+                    <trends>90d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <params>100</params>
+                        </step>
+                    </preprocessing>
+                </item>
+                <item>
+                    <name>Gitopia - Signed Blocks Window</name>
+                    <key>system.run[&quot;gitopiad q slashing params -o json | jq -r .signed_blocks_window&quot;]</key>
+                    <delay>12h</delay>
+                    <history>7d</history>
+                    <trends>90d</trends>
+                    <units>!blocks</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                </item>
+                <item>
+                    <name>Gitopia - Slash Downtime</name>
+                    <key>system.run[&quot;gitopiad q slashing params -o json | jq -r .slash_fraction_downtime&quot;]</key>
+                    <delay>12h</delay>
+                    <history>7d</history>
+                    <trends>90d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <params>100</params>
+                        </step>
+                    </preprocessing>
+                </item>
+                <item>
+                    <name>Gitopia - Missed Blocks Counter</name>
+                    <key>system.run[&quot;gitopiad q slashing signing-info '{\&quot;@type\&quot;:\&quot;/cosmos.crypto.ed25519.PubKey\&quot;,\&quot;key\&quot;:\&quot;{$GITOPIAED25519PUBKEY}\&quot;}' -o json | jq -r .missed_blocks_counter&quot;]</key>
+                    <delay>15m</delay>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <units>!blocks</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MATCHES_REGEX</type>
+                            <params>^[0-9]+$</params>
+                            <error_handler>DISCARD_VALUE</error_handler>
+                        </step>
+                    </preprocessing>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()} &gt; {last(#2)} + 5</expression>
+                            <name>Gitopia - Missed Blocks Counter was increased</name>
+                            <priority>WARNING</priority>
+                            <type>MULTIPLE</type>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Gitopia - Tombstoned Status</name>
+                    <key>system.run[&quot;gitopiad q slashing signing-info '{\&quot;@type\&quot;:\&quot;/cosmos.crypto.ed25519.PubKey\&quot;,\&quot;key\&quot;:\&quot;{$GITOPIAED25519PUBKEY}\&quot;}' -o json | jq -r .tombstoned&quot;]</key>
+                    <delay>15m</delay>
+                    <history>30d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MATCHES_REGEX</type>
+                            <params>^(false|true)$</params>
+                            <error_handler>DISCARD_VALUE</error_handler>
+                        </step>
+                    </preprocessing>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()}=&quot;true&quot;</expression>
+                            <name>Gitopia - Tombstoned is True</name>
+                            <priority>WARNING</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Gitopia - Delegator Total Delegations</name>
+                    <key>system.run[&quot;gitopiad q staking delegations {$GITOPIADELEGATORWALLET} -o json | jq -r '[.delegation_responses[].balance.amount | tonumber] | add'&quot;]</key>
+                    <delay>1d</delay>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>!LORE</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <params>0.000001</params>
+                        </step>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <params>return Math.round(value* 1000) / 1000</params>
+                        </step>
+                    </preprocessing>
+                </item>
+                <item>
+                    <name>Gitopia - Delegations Unbonding Time</name>
+                    <key>system.run[&quot;gitopiad q staking params -o json | jq -r .unbonding_time | grep -Eo [0-9]*&quot;]</key>
+                    <delay>1d</delay>
+                    <units>s</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                </item>
+                <item>
+                    <name>Gitopia - Validator Commission Rewards</name>
+                    <key>system.run[&quot;gitopiad query distribution commission {$GITOPIAVALOPER} -o json | jq -r '.commission[] | select(.denom == \&quot;{$GITOPIADENOM}\&quot;) | .amount'&quot;]</key>
+                    <delay>6h</delay>
+                    <history>7d</history>
+                    <trends>90d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>!LORE</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <params>0.000001</params>
+                        </step>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <params>return Math.round(value* 1000) / 1000</params>
+                        </step>
+                    </preprocessing>
+                </item>
+                <item>
+                    <name>Gitopia - Delegator Rewards</name>
+                    <key>system.run[&quot;gitopiad query distribution rewards {$GITOPIADELEGATORWALLET} -o json | jq -r '.total[] | select(.denom == \&quot;{$GITOPIADENOM}\&quot;) | .amount'&quot;]</key>
+                    <delay>6h</delay>
+                    <history>7d</history>
+                    <trends>90d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>!LORE</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <params>0.000001</params>
+                        </step>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <params>return Math.round(value* 1000) / 1000</params>
+                        </step>
+                    </preprocessing>
+                </item>
+                <item>
+                    <name>Gitopia - Validator Voting Power</name>
+                    <key>system.run[&quot;gitopiad query staking validator {$GITOPIAVALOPER} -o json | jq -r '.tokens'&quot;]</key>
+                    <delay>1h</delay>
+                    <history>7d</history>
+                    <trends>90d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>!LORE</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <params>0.000001</params>
+                        </step>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <params>return Math.round(value* 1000) / 1000</params>
+                        </step>
+                    </preprocessing>
+                    <triggers>
+                        <trigger>
+                            <expression>{diff()}=1</expression>
+                            <name>Gitopia - Validator Voting Power was changed</name>
+                            <priority>INFO</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Gitopia - Jailed Status</name>
+                    <key>system.run[&quot;gitopiad query staking validator {$GITOPIAVALOPER} -o json | jq -r .jailed&quot;]</key>
+                    <delay>15m</delay>
+                    <history>30d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MATCHES_REGEX</type>
+                            <params>^(false|true)$</params>
+                            <error_handler>DISCARD_VALUE</error_handler>
+                        </step>
+                    </preprocessing>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()}&lt;&gt;&quot;false&quot;</expression>
+                            <name>Gitopia - Validator was Jailed</name>
+                            <priority>WARNING</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Gitopia - Bond Status</name>
+                    <key>system.run[&quot;gitopiad query staking validator {$GITOPIAVALOPER} -o json | jq -r .status&quot;]</key>
+                    <delay>15m</delay>
+                    <history>30d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MATCHES_REGEX</type>
+                            <params>^.*BOND.*$</params>
+                            <error_handler>DISCARD_VALUE</error_handler>
+                        </step>
+                    </preprocessing>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()}=&quot;BOND_STATUS_UNBONDING&quot;</expression>
+                            <name>Gitopia - Bond Status is UNBONDED!</name>
+                            <priority>HIGH</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                        <trigger>
+                            <expression>{diff()}=1</expression>
+                            <name>Gitopia - Bond Status was changed</name>
+                            <priority>INFO</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+            </items>
+            <macros>
+                <macro>
+                    <macro>{$GITOPIADELEGATORWALLET}</macro>
+                    <value>gitopia18ayzkfmpxrp2vvm2e321e42hq5nh8qekya5dt8</value>
+                    <description>gitopia1xxxxxxx address of your wallet</description>
+                </macro>
+                <macro>
+                    <macro>{$GITOPIADENOM}</macro>
+                    <value>ulore</value>
+                    <description>denom value</description>
+                </macro>
+                <macro>
+                    <macro>{$GITOPIAED25519PUBKEY}</macro>
+                    <value>Te+cFK3oNt0sOtWig9873lkxJ83+dZKlHDHynJZpZCk=</value>
+                    <description>key info from 'gitopiad tendermint show-validator'</description>
+                </macro>
+                <macro>
+                    <macro>{$GITOPIARPCPORT}</macro>
+                    <value>16657</value>
+                    <description>RPC port of your validator</description>
+                </macro>
+                <macro>
+                    <macro>{$GITOPIAVALOPER}</macro>
+                    <value>gitopiavaloper18ayzkfmpxrp2vvm2edhmq89aq5nh8qekv8satu</value>
+                    <description>gitopiavaloper1xxxxxxxx address of your validator</description>
+                </macro>
+            </macros>
+        </template>
+    </templates>
+</zabbix_export>
