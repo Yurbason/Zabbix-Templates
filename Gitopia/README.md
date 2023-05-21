@@ -19,17 +19,17 @@ AllowKey=system.run[curl*]
    - {$GITOPIAPORT}             = RPC port of your validator (**26657** default)
    - {$GITOPIAVALOPER}          = **gitopiavaloper1xxxxxxx** address of your validator
 
-![Template Macros]( )
+![Template Macros](https://github.com/Yurbason/Zabbix-Templates/assets/52459938/70b5fe1d-08f0-4cfa-a6de-7b99ace79ebc)
 
 7. link template to validator host
 
 ## some screenshots
 ***monitoring values***
 
-![Gitopia monitoring values]( )
+![Gitopia monitoring values](https://github.com/Yurbason/Zabbix-Templates/assets/52459938/10f9df68-1eb3-4226-94ae-b4b00929e620)
 
 
 
 ***triggers***
 
-![GitopiaTriggers]( )
+![GitopiaTriggers](https://github.com/Yurbason/Zabbix-Templates/assets/52459938/766bc591-6ab8-4e3a-92c3-f848dc6e841d)
