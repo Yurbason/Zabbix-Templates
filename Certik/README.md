@@ -13,12 +13,12 @@ AllowKey=system.run[curl*]
 4. copy **$HOME/.shentud/config/app.toml client.toml config.toml** files to **$HOME/.shentud/config/** directory of the user under which the zabbix agent daemon is running
 5. [download](https://raw.githubusercontent.com/Yurbason/Zabbix-Templates/main/Certik/Certik.xml) and import template to zabbix server (Configuration-->Templates-->Import)
 6. configure template Macros
-   - {$CERTIKDELEGATORWALLET}  = **certik1xxxxxxx** address of your wallet
+   - {$CERTIKDELEGATORWALLET}  = **shentu1xxxxxxx** address of your wallet
    - {$CERTIKDENOM}            = denom value (**uctk**)
    - {$CERTIKED25519PUBKEY}    = key info from `shentud tendermint show-validator`
    - {$CERTIKPORT}             = RPC port of your validator (**26657** default)
 
-   - {$CERTIKVALOPER}          = **certikvaloper1xxxxxxx** address of your validator
+   - {$CERTIKVALOPER}          = **shentuvaloper1xxxxxxx** address of your validator
 
 ![Template Macros](https://user-images.githubusercontent.com/52459938/229214680-73b143cc-5d8e-4602-85a3-52dafd91be62.png)
 
