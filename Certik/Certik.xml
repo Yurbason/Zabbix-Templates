@@ -30,10 +30,10 @@
                     <history>7d</history>
                     <value_type>FLOAT</value_type>
                     <units>%</units>
-                    <params>change(&quot;system.run[\&quot;gravity query distribution rewards {$CERTIKDELEGATORWALLET} -o json | jq -r '.total[] | select(.denom == \\&quot;{$CERTIKDENOM}\\&quot;) | .amount'\&quot;]&quot;)&#13;
+                    <params>change(&quot;system.run[\&quot;shentud query distribution rewards {$CERTIKDELEGATORWALLET} -o json | jq -r '.total[] | select(.denom == \\&quot;{$CERTIKDENOM}\\&quot;) | .amount'\&quot;]&quot;)&#13;
 *100&#13;
 *365&#13;
-/last(&quot;system.run[\&quot;gravity q staking delegations {$CERTIKDELEGATORWALLET} -o json | jq -r '[.delegation_responses[].balance.amount | tonumber] | add'\&quot;]&quot;)</params>
+/last(&quot;system.run[\&quot;shentud q staking delegations {$CERTIKDELEGATORWALLET} -o json | jq -r '[.delegation_responses[].balance.amount | tonumber] | add'\&quot;]&quot;)</params>
                     <applications>
                         <application>
                             <name>CryptoSphere</name>
@@ -148,7 +148,7 @@
                 </item>
                 <item>
                     <name>Certik - Quantity of Proposals</name>
-                    <key>system.run[&quot;shentud q gov proposals --count-total -o json | jq -r | grep PROPOSAL_STATUS_VALIDATOR_VOTING_PERIOD -c&quot;]</key>
+                    <key>system.run[&quot;shentud q gov proposals --count-total -o json | jq -r | grep PROPOSAL_STATUS_VOTING_PERIOD -c&quot;]</key>
                     <delay>4h</delay>
                     <history>7d</history>
                     <trends>30d</trends>
