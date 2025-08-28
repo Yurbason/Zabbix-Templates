@@ -18,17 +18,16 @@ AllowKey=system.run[solana*]
    - {$RAMDISKPATH}            = path to solana ramdisk
    - {$VOTEACCOUNTPUBKEY}      = vote account pubkey
 
-![Template Macros](https://github.com/user-attachments/assets/bb615ab1-63ed-4336-b21d-abb9164497fd.png)
+**Template Macros**
+<img width="945" height="277" alt="SolanaMacros" src="https://github.com/user-attachments/assets/c14c8f8d-b461-4e63-8c93-61e6de17d629" />
 
 6. link template to validator host
 
 ## some screenshots
 ***monitoring values***
 
-![Solana monitoring values]( )
-
-
+<img width="1661" height="1099" alt="SolanaValues" src="https://github.com/user-attachments/assets/8cd5dfe6-cb0b-4da2-9532-70401ef18fd1" />
 
 ***triggers***
 
-![SolanaTriggers]( )
+<img width="374" height="881" alt="SolanaTriggers" src="https://github.com/user-attachments/assets/e87daa85-f672-4eee-96d9-5fbcf9e6c8dc" />
