@@ -10,7 +10,7 @@ AllowKey=system.run[solana*]
 ```
 2. restart zabbix agent daemon
 3. copy **solana** binary to **/usr/local/bin** or **/usr/bin** with a new name **solanaz**
-4. [download](https://raw.githubusercontent.com/Yurbason/Zabbix-Templates/main/Solana/Solana.xml) and import template to zabbix server (Configuration-->Templates-->Import)
+4. [download](https://raw.githubusercontent.com/Yurbason/Zabbix-Templates/refs/heads/main/Solana%20MainNet/Solana.xml) and import template to zabbix server (Configuration-->Templates-->Import)
 5. configure template Macros
    - {$ACCOUNTSHASHCACHEPATH}  = path to accounts-hash-cache-path
    - {$ACCOUNTSINDEXPATH}      = path to accounts-index-path
