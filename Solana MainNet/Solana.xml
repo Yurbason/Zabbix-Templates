@@ -1,0 +1,767 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>5.0</version>
+    <date>2025-08-28T09:04:34Z</date>
+    <groups>
+        <group>
+            <name>Templates</name>
+        </group>
+    </groups>
+    <templates>
+        <template>
+            <template>Solana Validator MainNet</template>
+            <name>Solana Validator MainNet</name>
+            <groups>
+                <group>
+                    <name>Templates</name>
+                </group>
+            </groups>
+            <applications>
+                <application>
+                    <name>CryptoSphere</name>
+                </application>
+            </applications>
+            <items>
+                <item>
+                    <name>Solana - check agave-validator running</name>
+                    <key>proc.num[agave-validator,soluser]</key>
+                    <delay>5m</delay>
+                    <history>3d</history>
+                    <trends>7d</trends>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()}=0</expression>
+                            <name>Solana - agave-validator proccess is not running</name>
+                            <priority>HIGH</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Solana - Epoch Progress</name>
+                    <type>CALCULATED</type>
+                    <key>solana.epoch.progress</key>
+                    <delay>15m</delay>
+                    <history>7d</history>
+                    <trends>60d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <params>last(&quot;system.run[\&quot;curl -sX POST -H \\&quot;Content-Type: application/json\\&quot; -d '{\\&quot;jsonrpc\\&quot;:\\&quot;2.0\\&quot;,\\&quot;id\\&quot;:1, \\&quot;method\\&quot;:\\&quot;getEpochInfo\\&quot;}' http://api.mainnet-beta.solana.com | jq -r .result.slotIndex\&quot;]&quot;)&#13;
+/&#13;
+last(&quot;system.run[\&quot;curl -sX POST -H \\&quot;Content-Type: application/json\\&quot; -d '{\\&quot;jsonrpc\\&quot;:\\&quot;2.0\\&quot;,\\&quot;id\\&quot;:1, \\&quot;method\\&quot;:\\&quot;getEpochInfo\\&quot;}' http://api.mainnet-beta.solana.com | jq -r .result.slotsInEpoch\&quot;]&quot;)&#13;
+*100</params>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <params>return Math.round(value* 100) / 100</params>
+                        </step>
+                    </preprocessing>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()}&gt;90</expression>
+                            <name>Solana - the Epoch is 90% complete</name>
+                            <priority>INFO</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Solana - LeaderSlots Percentage of Produced (produced / total)</name>
+                    <type>CALCULATED</type>
+                    <key>solana.produced.slots.percent</key>
+                    <delay>1h</delay>
+                    <history>30d</history>
+                    <trends>90d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>!%</units>
+                    <params>last(&quot;system.run[\&quot;solanaz block-production -v -ul | grep {$IDENTITYPUBKEY} | grep -Ev \\&quot;%|SKIP\\&quot; | wc -l\&quot;]&quot;)&#13;
+/&#13;
+last(&quot;system.run[\&quot;curl -sX POST -H \\&quot;Content-Type: application/json\\&quot; -d '{\\&quot;jsonrpc\\&quot;:\\&quot;2.0\\&quot;,\\&quot;id\\&quot;:1, \\&quot;method\\&quot;:\\&quot;getLeaderSchedule\\&quot;}' http://api.mainnet-beta.solana.com | jq .result.\\&quot;{$IDENTITYPUBKEY}\\&quot; | wc -l\&quot;]&quot;)&#13;
+* 100</params>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                </item>
+                <item>
+                    <name>Solana - LeaderSlots Percentage of Skipped (skipped / total)</name>
+                    <type>CALCULATED</type>
+                    <key>solana.skipped.slots.percent</key>
+                    <delay>1h</delay>
+                    <history>30d</history>
+                    <trends>90d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>!%</units>
+                    <params>last(&quot;system.run[\&quot;solanaz block-production -v -ul | grep {$IDENTITYPUBKEY}.*SKIP | wc -l\&quot;]&quot;)&#13;
+/&#13;
+last(&quot;system.run[\&quot;curl -sX POST -H \\&quot;Content-Type: application/json\\&quot; -d '{\\&quot;jsonrpc\\&quot;:\\&quot;2.0\\&quot;,\\&quot;id\\&quot;:1, \\&quot;method\\&quot;:\\&quot;getLeaderSchedule\\&quot;}' http://api.mainnet-beta.solana.com | jq .result.\\&quot;{$IDENTITYPUBKEY}\\&quot; | wc -l\&quot;]&quot;)&#13;
+* 100</params>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                </item>
+                <item>
+                    <name>Solana - Balance Vote plus Identity account</name>
+                    <type>CALCULATED</type>
+                    <key>solana.total.balance</key>
+                    <delay>1h</delay>
+                    <history>7d</history>
+                    <value_type>FLOAT</value_type>
+                    <units>!SOL</units>
+                    <params>last(&quot;system.run[\&quot;solanaz balance -ul {$IDENTITYPUBKEY}\&quot;]&quot;)&#13;
++&#13;
+last(&quot;system.run[\&quot;solanaz balance -ul {$VOTEACCOUNTPUBKEY}\&quot;]&quot;)</params>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <params>return Math.round(value* 1000) / 1000</params>
+                        </step>
+                    </preprocessing>
+                </item>
+                <item>
+                    <name>Solana - MEV rewards for last epoch</name>
+                    <key>system.run[&quot;curl -s https://kobe.mainnet.jito.network/api/v1/validators/{$VOTEACCOUNTPUBKEY} | jq -r '.[0].mev_rewards'&quot;]</key>
+                    <delay>1h</delay>
+                    <value_type>FLOAT</value_type>
+                    <units>!SOL</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <params>0.0000000001</params>
+                        </step>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <params>return Math.round(value* 1000) / 1000</params>
+                        </step>
+                    </preprocessing>
+                    <triggers>
+                        <trigger>
+                            <expression>{diff()}=1</expression>
+                            <name>Solana - MEV rewards for last epoch</name>
+                            <priority>INFO</priority>
+                            <description>Last value: {ITEM.LASTVALUE}</description>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Solana - Epoch SlotIndex</name>
+                    <key>system.run[&quot;curl -sX POST -H \&quot;Content-Type: application/json\&quot; -d '{\&quot;jsonrpc\&quot;:\&quot;2.0\&quot;,\&quot;id\&quot;:1, \&quot;method\&quot;:\&quot;getEpochInfo\&quot;}' http://api.mainnet-beta.solana.com | jq -r .result.slotIndex&quot;]</key>
+                    <delay>15m</delay>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <units>!slot</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                </item>
+                <item>
+                    <name>Solana - Epoch total Slots</name>
+                    <key>system.run[&quot;curl -sX POST -H \&quot;Content-Type: application/json\&quot; -d '{\&quot;jsonrpc\&quot;:\&quot;2.0\&quot;,\&quot;id\&quot;:1, \&quot;method\&quot;:\&quot;getEpochInfo\&quot;}' http://api.mainnet-beta.solana.com | jq -r .result.slotsInEpoch&quot;]</key>
+                    <delay>6h</delay>
+                    <history>7d</history>
+                    <trends>180d</trends>
+                    <units>!slots</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                </item>
+                <item>
+                    <name>Solana - LeaderSlots in the Current Epoch</name>
+                    <key>system.run[&quot;curl -sX POST -H \&quot;Content-Type: application/json\&quot; -d '{\&quot;jsonrpc\&quot;:\&quot;2.0\&quot;,\&quot;id\&quot;:1, \&quot;method\&quot;:\&quot;getLeaderSchedule\&quot;}' http://api.mainnet-beta.solana.com | jq .result.\&quot;{$IDENTITYPUBKEY}\&quot; | wc -l&quot;]</key>
+                    <delay>1h</delay>
+                    <history>30d</history>
+                    <trends>90d</trends>
+                    <units>!slots</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <params>return value - 2</params>
+                        </step>
+                        <step>
+                            <type>STR_REPLACE</type>
+                            <params>-1
+0</params>
+                        </step>
+                    </preprocessing>
+                    <triggers>
+                        <trigger>
+                            <expression>{diff()}=1</expression>
+                            <name>Solana - LeaderSlots in the Current Epoch</name>
+                            <priority>INFO</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Solana - Blockchain Block Height</name>
+                    <key>system.run[&quot;solanaz -ul --output json block-height&quot;]</key>
+                    <delay>15m</delay>
+                    <history>7d</history>
+                    <trends>180d</trends>
+                    <units>!blocks</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{diff()}=0</expression>
+                            <name>Solana - Block Height has not changed</name>
+                            <priority>WARNING</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Solana - Epoch</name>
+                    <key>system.run[&quot;solanaz -ul --output json epoch&quot;]</key>
+                    <delay>1h</delay>
+                    <units>!</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{diff()}=1</expression>
+                            <name>Solana - Epoch was changed</name>
+                            <priority>INFO</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Solana - Blockchain Current Slot</name>
+                    <key>system.run[&quot;solanaz -ul --output json slot&quot;]</key>
+                    <delay>15m</delay>
+                    <history>7d</history>
+                    <trends>180d</trends>
+                    <units>!slot</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{diff()}=0</expression>
+                            <name>Solana - Current Slot has not changed</name>
+                            <priority>WARNING</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Solana - Epoch Average Cluster Skip Rate</name>
+                    <key>system.run[&quot;solanaz -ul block-production | grep Epoch.*total | awk '{ print $7; }' | grep -Eo '[0-9.]{1,6}'&quot;]</key>
+                    <delay>1h</delay>
+                    <history>30d</history>
+                    <trends>90d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>!%</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                </item>
+                <item>
+                    <name>Solana - Validator Credits top position</name>
+                    <key>system.run[&quot;solanaz -ul validators --sort=credits -n -r | grep {$IDENTITYPUBKEY}.*{$VOTEACCOUNTPUBKEY} | awk '{ print $1 }' | grep -Eo '[0-9]{1,5}'&quot;]</key>
+                    <delay>30m</delay>
+                    <history>14d</history>
+                    <units>!</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()}&lt;=250</expression>
+                            <name>Solana - Validator Credits top position is good place</name>
+                            <priority>INFO</priority>
+                            <description>Last value: {ITEM.LASTVALUE}</description>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                        <trigger>
+                            <expression>{last()}&gt;=700</expression>
+                            <name>Solana - Validator Credits very bad place in the top</name>
+                            <priority>HIGH</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Solana - Cluster Version</name>
+                    <key>system.run[&quot;solanaz -um --output json cluster-version&quot;]</key>
+                    <delay>1h</delay>
+                    <history>30d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>NOT_MATCHES_REGEX</type>
+                            <params>Error</params>
+                            <error_handler>DISCARD_VALUE</error_handler>
+                        </step>
+                    </preprocessing>
+                </item>
+                <item>
+                    <name>Solana - Balance Identity account</name>
+                    <key>system.run[&quot;solanaz balance -ul {$IDENTITYPUBKEY}&quot;]</key>
+                    <delay>1h</delay>
+                    <history>7d</history>
+                    <trends>180d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>!SOL</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>TRIM</type>
+                            <params>SOL</params>
+                        </step>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <params>return Math.round(value* 1000) / 1000</params>
+                        </step>
+                    </preprocessing>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()} &gt; {last(#2)} + 1</expression>
+                            <name>Solana - Identity Balance increased by 1 SOL</name>
+                            <priority>INFO</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                        <trigger>
+                            <expression>{last()}&lt;=4</expression>
+                            <name>Solana - Identity Balance less than 4 SOL!</name>
+                            <priority>HIGH</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Solana - Balance Vote account</name>
+                    <key>system.run[&quot;solanaz balance -ul {$VOTEACCOUNTPUBKEY}&quot;]</key>
+                    <delay>1h</delay>
+                    <history>7d</history>
+                    <trends>180d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>!SOL</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>TRIM</type>
+                            <params> SOL</params>
+                        </step>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <params>return Math.round(value* 1000) / 1000</params>
+                        </step>
+                    </preprocessing>
+                </item>
+                <item>
+                    <name>Solana - LeaderSlots Skipped in the Current Epoch</name>
+                    <key>system.run[&quot;solanaz block-production -v -ul | grep {$IDENTITYPUBKEY}.*SKIP | wc -l&quot;]</key>
+                    <delay>30m</delay>
+                    <history>30d</history>
+                    <trends>90d</trends>
+                    <units>!slots</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()} &gt; {last(#2)}</expression>
+                            <name>Solana - Skipped LeaderSlots was increased</name>
+                            <priority>INFO</priority>
+                            <description>Last value: {ITEM.LASTVALUE}</description>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Solana - LeaderSlots Produced in the Current Epoch</name>
+                    <key>system.run[&quot;solanaz block-production -v -ul | grep {$IDENTITYPUBKEY} | grep -Ev \&quot;%|SKIP\&quot; | wc -l&quot;]</key>
+                    <delay>30m</delay>
+                    <history>30d</history>
+                    <trends>90d</trends>
+                    <units>!slots</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                </item>
+                <item>
+                    <name>Solana - Validator Deactivating Stake</name>
+                    <key>system.run[&quot;solanaz stakes -um {$VOTEACCOUNTPUBKEY} --output json-compact | jq -r '[.[].deactivatingStake] | add'&quot;]</key>
+                    <delay>15m</delay>
+                    <history>7d</history>
+                    <trends>180d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>!SOL</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>STR_REPLACE</type>
+                            <params>null
+0</params>
+                        </step>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <params>0.000000001</params>
+                        </step>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <params>return Math.round(value* 100) / 100</params>
+                        </step>
+                    </preprocessing>
+                    <triggers>
+                        <trigger>
+                            <expression>{diff()}=1</expression>
+                            <name>Solana - Deactivating Stake was changed</name>
+                            <priority>INFO</priority>
+                            <description>Last value: {ITEM.LASTVALUE}</description>
+                            <type>MULTIPLE</type>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Solana - Validator Delegated Stake</name>
+                    <key>system.run[&quot;solanaz stakes -um {$VOTEACCOUNTPUBKEY} --output json-compact | jq -r '[.[].delegatedStake]  | add'&quot;]</key>
+                    <delay>15m</delay>
+                    <history>7d</history>
+                    <trends>180d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>!SOL</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <params>0.000000001</params>
+                        </step>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <params>return Math.round(value* 100) / 100</params>
+                        </step>
+                    </preprocessing>
+                    <triggers>
+                        <trigger>
+                            <expression>{abschange()}&gt;3</expression>
+                            <name>Solana - Delegated Stake was changed</name>
+                            <priority>INFO</priority>
+                            <type>MULTIPLE</type>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Solana - Validator Activated Stake</name>
+                    <key>system.run[&quot;solanaz validators -ul --output json | jq -r '.validators[] | select(.identityPubkey == \&quot;{$IDENTITYPUBKEY}\&quot; and .voteAccountPubkey == \&quot;{$VOTEACCOUNTPUBKEY}\&quot;) | .activatedStake'&quot;]</key>
+                    <delay>30m</delay>
+                    <history>7d</history>
+                    <trends>180d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>!SOL</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <params>0.000000001</params>
+                        </step>
+                        <step>
+                            <type>JAVASCRIPT</type>
+                            <params>return Math.round(value* 100) / 100</params>
+                        </step>
+                    </preprocessing>
+                    <triggers>
+                        <trigger>
+                            <expression>{abschange()}&gt;=100</expression>
+                            <name>Solana - Activated Stake was changed</name>
+                            <priority>INFO</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Solana - Validator Commission</name>
+                    <key>system.run[&quot;solanaz validators -ul --output json | jq -r '.validators[] | select(.identityPubkey == \&quot;{$IDENTITYPUBKEY}\&quot; and .voteAccountPubkey == \&quot;{$VOTEACCOUNTPUBKEY}\&quot;) | .commission'&quot;]</key>
+                    <delay>1h</delay>
+                    <history>7d</history>
+                    <trends>180d</trends>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                </item>
+                <item>
+                    <name>Solana - Validator Delinquent Status</name>
+                    <key>system.run[&quot;solanaz validators -ul --output json | jq -r '.validators[] | select(.identityPubkey == \&quot;{$IDENTITYPUBKEY}\&quot; and .voteAccountPubkey == \&quot;{$VOTEACCOUNTPUBKEY}\&quot;) | .delinquent'&quot;]</key>
+                    <delay>15m</delay>
+                    <history>7d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()}&lt;&gt;&quot;false&quot;</expression>
+                            <name>Solana - validator is delinquent</name>
+                            <priority>HIGH</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Solana - Validator Credits in the Current Epoch</name>
+                    <key>system.run[&quot;solanaz validators -ul --output json | jq -r '.validators[] | select(.identityPubkey == \&quot;{$IDENTITYPUBKEY}\&quot; and .voteAccountPubkey == \&quot;{$VOTEACCOUNTPUBKEY}\&quot;) | .epochCredits'&quot;]</key>
+                    <delay>30m</delay>
+                    <history>7d</history>
+                    <trends>180d</trends>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                </item>
+                <item>
+                    <name>Solana - Validator Skip Rate (skipped / passed)</name>
+                    <key>system.run[&quot;solanaz validators -ul --output json | jq -r '.validators[] | select(.identityPubkey == \&quot;{$IDENTITYPUBKEY}\&quot; and .voteAccountPubkey == \&quot;{$VOTEACCOUNTPUBKEY}\&quot;) | .skipRate'&quot;]</key>
+                    <delay>15m</delay>
+                    <history>7d</history>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <preprocessing>
+                        <step>
+                            <type>STR_REPLACE</type>
+                            <params>null
+0</params>
+                        </step>
+                    </preprocessing>
+                </item>
+                <item>
+                    <name>Solana - Validator Version</name>
+                    <key>system.run[&quot;solanaz validators -ul --output json | jq -r '.validators[] | select(.identityPubkey == \&quot;{$IDENTITYPUBKEY}\&quot; and .voteAccountPubkey == \&quot;{$VOTEACCOUNTPUBKEY}\&quot;) | .version'&quot;]</key>
+                    <delay>1h</delay>
+                    <history>30d</history>
+                    <trends>0</trends>
+                    <value_type>TEXT</value_type>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                </item>
+                <item>
+                    <name>Solana - accounts_hash_cache dir size</name>
+                    <key>vfs.dir.size[{$ACCOUNTSHASHCACHEPATH}]</key>
+                    <delay>5m</delay>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <units>B</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                </item>
+                <item>
+                    <name>Solana - accounts_index dir size</name>
+                    <key>vfs.dir.size[{$ACCOUNTSINDEXPATH}]</key>
+                    <delay>5m</delay>
+                    <history>7d</history>
+                    <trends>30d</trends>
+                    <units>B</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                </item>
+                <item>
+                    <name>Solana - number of open file descriptors</name>
+                    <key>vfs.file.regexp[/proc/sys/fs/file-nr,&quot;([0-9]+)\s+([0-9]+)\s+([0-9]+)&quot;,,1,2,\1]</key>
+                    <delay>15m</delay>
+                    <history>30d</history>
+                    <trends>60d</trends>
+                    <units>!files</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()}&gt;=1800000</expression>
+                            <name>Solana - too many open file descriptors, need restart! 1.8M</name>
+                            <priority>HIGH</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                        <trigger>
+                            <expression>{last()}&gt;=930000</expression>
+                            <name>Solana - too many open file descriptors, need restart! 930k</name>
+                            <priority>AVERAGE</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+                <item>
+                    <name>Solana - RAMdisk Free inodes in %</name>
+                    <key>vfs.fs.inode[{$RAMDISKPATH},pfree]</key>
+                    <delay>5m</delay>
+                    <history>7d</history>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                </item>
+                <item>
+                    <name>Solana - RAMdisk Space utilization</name>
+                    <key>vfs.fs.size[{$RAMDISKPATH},pused]</key>
+                    <delay>5m</delay>
+                    <history>7d</history>
+                    <value_type>FLOAT</value_type>
+                    <units>%</units>
+                    <description>Space utilization in % for RAMdisk</description>
+                    <applications>
+                        <application>
+                            <name>CryptoSphere</name>
+                        </application>
+                    </applications>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()}&gt;=90</expression>
+                            <name>RAMdisk used space is criticaly low</name>
+                            <priority>HIGH</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
+                </item>
+            </items>
+            <macros>
+                <macro>
+                    <macro>{$ACCOUNTSHASHCACHEPATH}</macro>
+                    <value>/home/soluser/solana/ledger/accounts_hash_cache</value>
+                    <description>path to accounts-hash-cache-path</description>
+                </macro>
+                <macro>
+                    <macro>{$ACCOUNTSINDEXPATH}</macro>
+                    <value>/home/soluser/solana/ledger/accounts_index</value>
+                    <description>path to accounts-index-path</description>
+                </macro>
+                <macro>
+                    <macro>{$IDENTITYPUBKEY}</macro>
+                    <value>YuRBAsy9Stw1u46A8dMp7WQVBFweLP1PKuYibzYAMmQ</value>
+                    <description>identity pubkey</description>
+                </macro>
+                <macro>
+                    <macro>{$RAMDISKPATH}</macro>
+                    <value>/mnt/rdsol</value>
+                    <description>path to solana ramdisk</description>
+                </macro>
+                <macro>
+                    <macro>{$VOTEACCOUNTPUBKEY}</macro>
+                    <value>9gANMngbGUmAaLXL1RC3JdiaLjRowJXNbzCTh53ht7mq</value>
+                    <description>vote account pubkey</description>
+                </macro>
+            </macros>
+        </template>
+    </templates>
+    <triggers>
+        <trigger>
+            <expression>{Solana Validator MainNet:system.run[&quot;solanaz validators -ul --output json | jq -r '.validators[] | select(.identityPubkey == \&quot;{$IDENTITYPUBKEY}\&quot; and .voteAccountPubkey == \&quot;{$VOTEACCOUNTPUBKEY}\&quot;) | .skipRate'&quot;].last()}&#13;
+&gt; {Solana Validator MainNet:system.run[&quot;solanaz -ul block-production | grep Epoch.*total | awk '{ print $7; }' | grep -Eo '[0-9.]{1,6}'&quot;].last()} + 10</expression>
+            <name>Solana - Validator Skip Rate above Maximum allowed SFDP Skip Rate for epoch</name>
+            <priority>HIGH</priority>
+            <manual_close>YES</manual_close>
+        </trigger>
+        <trigger>
+            <expression>{Solana Validator MainNet:solana.produced.slots.percent.last()} &gt;&#13;
+100&#13;
+- {Solana Validator MainNet:system.run[&quot;solanaz -ul block-production | grep Epoch.*total | awk '{ print $7; }' | grep -Eo '[0-9.]{1,6}'&quot;].last()}&#13;
+- 10</expression>
+            <name>Solana - Welcome to the next SFDP Epoch</name>
+            <priority>INFO</priority>
+            <manual_close>YES</manual_close>
+        </trigger>
+    </triggers>
+</zabbix_export>
