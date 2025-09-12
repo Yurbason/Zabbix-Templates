@@ -12,13 +12,15 @@ AllowKey=system.run[curl*]
 4. copy **$HOME/.firmachain/config/app.toml client.toml config.toml** files to **$HOME/.firmachain/config/** directory of the user under which the zabbix agent daemon is running
 5. [download](https://raw.githubusercontent.com/Yurbason/Zabbix-Templates/main/FirmaChain/FirmaChain.xml) and import template to zabbix server (Configuration-->Templates-->Import)
 6. configure template Macros
+   - {$FIRMAAPIPORT}          = API port of your validator (**1317** default)
    - {$FIRMADELEGATORWALLET}  = **firma1xxxxxxx** address of your wallet
    - {$FIRMADENOM}            = denom value (**ufct**)
    - {$FIRMAED25519PUBKEY}    = key info from `firmachaind tendermint show-validator`
-   - {$FIRMAPORT}             = RPC port of your validator (**26657** default)
+   - {$FIRMARPCPORT}          = RPC port of your validator (**26657** default)
+   - {$FIRMAVALCONS}          = **firmavalconsxxxxxxx** (`firmachaind tendermint show-address`)
    - {$FIRMAVALOPER}          = **firmavaloper1xxxxxxx** address of your validator
 
-![Template Macros](https://user-images.githubusercontent.com/52459938/174291436-c030def9-e989-4a6f-bac1-f64f39baa84a.png)
+![Template Macros](https://github.com/user-attachments/assets/4894439d-3155-4dcc-b75d-f3cea45831e0)
 
 7. link template to validator host
 
