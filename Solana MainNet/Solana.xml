@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <zabbix_export>
     <version>5.0</version>
-    <date>2025-08-28T09:04:34Z</date>
+    <date>2026-10-22T07:55:07Z</date>
     <groups>
         <group>
             <name>Templates</name>
@@ -24,7 +24,7 @@
             <items>
                 <item>
                     <name>Solana - check agave-validator running</name>
-                    <key>proc.num[agave-validator,soluser]</key>
+                    <key>proc.num[agave-validator,{$USERPROCESS}]</key>
                     <delay>5m</delay>
                     <history>3d</history>
                     <trends>7d</trends>
@@ -301,33 +301,6 @@ last(&quot;system.run[\&quot;solanaz balance -ul {$VOTEACCOUNTPUBKEY}\&quot;]&qu
                     </applications>
                 </item>
                 <item>
-                    <name>Solana - Validator Credits top position</name>
-                    <key>system.run[&quot;solanaz -ul validators --sort=credits -n -r | grep {$IDENTITYPUBKEY}.*{$VOTEACCOUNTPUBKEY} | awk '{ print $1 }' | grep -Eo '[0-9]{1,5}'&quot;]</key>
-                    <delay>30m</delay>
-                    <history>14d</history>
-                    <units>!</units>
-                    <applications>
-                        <application>
-                            <name>CryptoSphere</name>
-                        </application>
-                    </applications>
-                    <triggers>
-                        <trigger>
-                            <expression>{last()}&lt;=250</expression>
-                            <name>Solana - Validator Credits top position is good place</name>
-                            <priority>INFO</priority>
-                            <description>Last value: {ITEM.LASTVALUE}</description>
-                            <manual_close>YES</manual_close>
-                        </trigger>
-                        <trigger>
-                            <expression>{last()}&gt;=700</expression>
-                            <name>Solana - Validator Credits very bad place in the top</name>
-                            <priority>HIGH</priority>
-                            <manual_close>YES</manual_close>
-                        </trigger>
-                    </triggers>
-                </item>
-                <item>
                     <name>Solana - Cluster Version</name>
                     <key>system.run[&quot;solanaz -um --output json cluster-version&quot;]</key>
                     <delay>1h</delay>
@@ -370,25 +343,11 @@ last(&quot;system.run[\&quot;solanaz balance -ul {$VOTEACCOUNTPUBKEY}\&quot;]&qu
                             <params>return Math.round(value* 1000) / 1000</params>
                         </step>
                     </preprocessing>
-                    <triggers>
-                        <trigger>
-                            <expression>{last()} &gt; {last(#2)} + 1</expression>
-                            <name>Solana - Identity Balance increased by 1 SOL</name>
-                            <priority>INFO</priority>
-                            <manual_close>YES</manual_close>
-                        </trigger>
-                        <trigger>
-                            <expression>{last()}&lt;=4</expression>
-                            <name>Solana - Identity Balance less than 4 SOL!</name>
-                            <priority>HIGH</priority>
-                            <manual_close>YES</manual_close>
-                        </trigger>
-                    </triggers>
                 </item>
                 <item>
                     <name>Solana - Balance Vote account</name>
                     <key>system.run[&quot;solanaz balance -ul {$VOTEACCOUNTPUBKEY}&quot;]</key>
-                    <delay>1h</delay>
+                    <delay>6h</delay>
                     <history>7d</history>
                     <trends>180d</trends>
                     <value_type>FLOAT</value_type>
@@ -408,6 +367,14 @@ last(&quot;system.run[\&quot;solanaz balance -ul {$VOTEACCOUNTPUBKEY}\&quot;]&qu
                             <params>return Math.round(value* 1000) / 1000</params>
                         </step>
                     </preprocessing>
+                    <triggers>
+                        <trigger>
+                            <expression>{last()}&lt;=4</expression>
+                            <name>Solana - Vote Balance less than 4SOL!</name>
+                            <priority>HIGH</priority>
+                            <manual_close>YES</manual_close>
+                        </trigger>
+                    </triggers>
                 </item>
                 <item>
                     <name>Solana - LeaderSlots Skipped in the Current Epoch</name>
@@ -550,7 +517,7 @@ last(&quot;system.run[\&quot;solanaz balance -ul {$VOTEACCOUNTPUBKEY}\&quot;]&qu
                 </item>
                 <item>
                     <name>Solana - Validator Commission</name>
-                    <key>system.run[&quot;solanaz validators -ul --output json | jq -r '.validators[] | select(.identityPubkey == \&quot;{$IDENTITYPUBKEY}\&quot; and .voteAccountPubkey == \&quot;{$VOTEACCOUNTPUBKEY}\&quot;) | .commission'&quot;]</key>
+                    <key>system.run[&quot;solanaz validators -ul --output json | jq -r '.validators[] | select(.identityPubkey == \&quot;{$IDENTITYPUBKEY}\&quot; and .voteAccountPubkey == \&quot;{$VOTEACCOUNTPUBKEY}\&quot;) | .commissionBps'&quot;]</key>
                     <delay>1h</delay>
                     <history>7d</history>
                     <trends>180d</trends>
@@ -561,6 +528,12 @@ last(&quot;system.run[\&quot;solanaz balance -ul {$VOTEACCOUNTPUBKEY}\&quot;]&qu
                             <name>CryptoSphere</name>
                         </application>
                     </applications>
+                    <preprocessing>
+                        <step>
+                            <type>MULTIPLIER</type>
+                            <params>0.01</params>
+                        </step>
+                    </preprocessing>
                 </item>
                 <item>
                     <name>Solana - Validator Delinquent Status</name>
@@ -582,18 +555,6 @@ last(&quot;system.run[\&quot;solanaz balance -ul {$VOTEACCOUNTPUBKEY}\&quot;]&qu
                             <manual_close>YES</manual_close>
                         </trigger>
                     </triggers>
-                </item>
-                <item>
-                    <name>Solana - Validator Credits in the Current Epoch</name>
-                    <key>system.run[&quot;solanaz validators -ul --output json | jq -r '.validators[] | select(.identityPubkey == \&quot;{$IDENTITYPUBKEY}\&quot; and .voteAccountPubkey == \&quot;{$VOTEACCOUNTPUBKEY}\&quot;) | .epochCredits'&quot;]</key>
-                    <delay>30m</delay>
-                    <history>7d</history>
-                    <trends>180d</trends>
-                    <applications>
-                        <application>
-                            <name>CryptoSphere</name>
-                        </application>
-                    </applications>
                 </item>
                 <item>
                     <name>Solana - Validator Skip Rate (skipped / passed)</name>
@@ -675,7 +636,7 @@ last(&quot;system.run[\&quot;solanaz balance -ul {$VOTEACCOUNTPUBKEY}\&quot;]&qu
                         </trigger>
                         <trigger>
                             <expression>{last()}&gt;=930000</expression>
-                            <name>Solana - too many open file descriptors, need restart! 930k</name>
+                            <name>Solana - too many open file descriptors, needs to be checked! 930k</name>
                             <priority>AVERAGE</priority>
                             <manual_close>YES</manual_close>
                         </trigger>
@@ -739,6 +700,11 @@ last(&quot;system.run[\&quot;solanaz balance -ul {$VOTEACCOUNTPUBKEY}\&quot;]&qu
                     <description>path to solana ramdisk</description>
                 </macro>
                 <macro>
+                    <macro>{$USERPROCESS}</macro>
+                    <value>soluser</value>
+                    <description>the user running the agave-validator process</description>
+                </macro>
+                <macro>
                     <macro>{$VOTEACCOUNTPUBKEY}</macro>
                     <value>9gANMngbGUmAaLXL1RC3JdiaLjRowJXNbzCTh53ht7mq</value>
                     <description>vote account pubkey</description>
@@ -749,7 +715,7 @@ last(&quot;system.run[\&quot;solanaz balance -ul {$VOTEACCOUNTPUBKEY}\&quot;]&qu
     <triggers>
         <trigger>
             <expression>{Solana Validator MainNet:system.run[&quot;solanaz validators -ul --output json | jq -r '.validators[] | select(.identityPubkey == \&quot;{$IDENTITYPUBKEY}\&quot; and .voteAccountPubkey == \&quot;{$VOTEACCOUNTPUBKEY}\&quot;) | .skipRate'&quot;].last()}&#13;
-&gt; {Solana Validator MainNet:system.run[&quot;solanaz -ul block-production | grep Epoch.*total | awk '{ print $7; }' | grep -Eo '[0-9.]{1,6}'&quot;].last()} + 10</expression>
+&gt; {Solana Validator MainNet:system.run[&quot;solanaz -ul block-production | grep Epoch.*total | awk '{ print $7; }' | grep -Eo '[0-9.]{1,6}'&quot;].last()} + 5</expression>
             <name>Solana - Validator Skip Rate above Maximum allowed SFDP Skip Rate for epoch</name>
             <priority>HIGH</priority>
             <manual_close>YES</manual_close>
@@ -758,7 +724,7 @@ last(&quot;system.run[\&quot;solanaz balance -ul {$VOTEACCOUNTPUBKEY}\&quot;]&qu
             <expression>{Solana Validator MainNet:solana.produced.slots.percent.last()} &gt;&#13;
 100&#13;
 - {Solana Validator MainNet:system.run[&quot;solanaz -ul block-production | grep Epoch.*total | awk '{ print $7; }' | grep -Eo '[0-9.]{1,6}'&quot;].last()}&#13;
-- 10</expression>
+- 5</expression>
             <name>Solana - Welcome to the next SFDP Epoch</name>
             <priority>INFO</priority>
             <manual_close>YES</manual_close>
